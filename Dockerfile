@@ -9,7 +9,7 @@ WORKDIR /app
 EXPOSE 3000
 
 # RUN mkdir -p /app/uploads
-# RUN mkdir -p /app/downloads
+RUN mkdir -p /app/questionApiScripts
 RUN npm install
 
 CMD [ "node", "src/index.js" ]

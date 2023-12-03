@@ -6,11 +6,11 @@ const questionsSchema = new mongoose.Schema(
 			type: String,
 			required: true,
 		},
-		qid: {
-			type: Number,
-			required: true,
-			unique: true,
-		},
+		// qid: {
+		// 	type: Number,
+		// 	required: true,
+		// 	unique: true,
+		// },
 		finalAnswer: {
 			type: Boolean,
 		},
@@ -22,7 +22,7 @@ const questionsSchema = new mongoose.Schema(
 			type: String,
 			required: true,
 		},
-		api: {
+		path: {
 			type: String,
 			required: true,
 		},

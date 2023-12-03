@@ -1,14 +1,15 @@
 const { Questions } = require("../models/questions");
+const fs = require("fs");
 
 const addQuestion = async (req, res) => {
 	try {
-		const { question, qid, yesAnswer, noAnswer, api, expireAt } = req.body;
+		const { question, qid, yesAnswer, noAnswer, path, expireAt } = req.body;
 		if (!question) return res.status(400).json({ error: "required question" });
-		if (!qid) return res.status(400).json({ error: "required qid" });
+		// if (!qid) return res.status(400).json({ error: "required qid" });
 		if (!yesAnswer)
 			return res.status(400).json({ error: "required yesAnswer" });
 		if (!noAnswer) return res.status(400).json({ error: "required noAnswer" });
-		if (!api) return res.status(400).json({ error: "required api" });
+		if (!path) return res.status(400).json({ error: "required path" });
 		if (!expireAt) return res.status(400).json({ error: "required expireAt" });
 
 		const data = Questions.create({
@@ -16,7 +17,7 @@ const addQuestion = async (req, res) => {
 			qid,
 			yesAnswer,
 			noAnswer,
-			api,
+			path,
 			expireAt,
 			user: req.user._id,
 		});
@@ -38,4 +39,21 @@ const getQuestions = async (req, res) => {
 	}
 };
 
-module.exports = { addQuestion, getQuestions };
+const nodescript = async (req, res) => {
+	try {
+		const { script } = req.body;
+		if (!script)
+			return res.status(500).send({ message: "Please send script!" });
+
+		const codePath = `questionApiScripts/code_${Date.now()}.js`;
+		var writeStream = fs.createWriteStream(`${codePath}`);
+		writeStream.write(script);
+		writeStream.end();
+
+		res.send({ filename: codePath });
+	} catch (error) {
+		console.log(error.message);
+	}
+};
+
+module.exports = { addQuestion, getQuestions, nodescript };
