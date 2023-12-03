@@ -1,5 +1,6 @@
 const { Questions } = require("../models/questions");
 const fs = require("fs");
+const { Vote } = require("../models/vote");
 
 const addQuestion = async (req, res) => {
 	try {
@@ -56,4 +57,20 @@ const nodescript = async (req, res) => {
 	}
 };
 
-module.exports = { addQuestion, getQuestions, nodescript };
+const voteQuestion = async (req, res) => {
+	try {
+		console.log(req.body);
+		const question = await Questions.findById(req.body.question);
+		const vote = await new Vote({
+			question: question._id,
+			...req.body,
+			user: req.user._id,
+		}).save();
+
+		res.status(201).send(vote);
+	} catch (error) {
+		res.status(500).json({ message: error.message });
+	}
+};
+
+module.exports = { addQuestion, getQuestions, voteQuestion, nodescript };
