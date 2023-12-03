@@ -38,6 +38,11 @@ const questionsSchema = new mongoose.Schema(
 				type: Number,
 			},
 		},
+		user: {
+			type: mongoose.Types.ObjectId,
+			ref: "User",
+			required: true,
+		},
 	},
 	{
 		timestamps: true,

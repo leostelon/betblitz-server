@@ -2,15 +2,11 @@ const { Questions } = require("../models/questions");
 
 const addQuestion = async (req, res) => {
 	try {
-		const { question,
-			qid,
-			yesAnswer,
-			noAnswer,
-			api,
-			expireAt, } = req.body;
+		const { question, qid, yesAnswer, noAnswer, api, expireAt } = req.body;
 		if (!question) return res.status(400).json({ error: "required question" });
 		if (!qid) return res.status(400).json({ error: "required qid" });
-		if (!yesAnswer) return res.status(400).json({ error: "required yesAnswer" });
+		if (!yesAnswer)
+			return res.status(400).json({ error: "required yesAnswer" });
 		if (!noAnswer) return res.status(400).json({ error: "required noAnswer" });
 		if (!api) return res.status(400).json({ error: "required api" });
 		if (!expireAt) return res.status(400).json({ error: "required expireAt" });
@@ -22,6 +18,7 @@ const addQuestion = async (req, res) => {
 			noAnswer,
 			api,
 			expireAt,
+			user: req.user._id,
 		});
 
 		return res.status(200).json(data);
@@ -30,12 +27,11 @@ const addQuestion = async (req, res) => {
 		res.status(500).json({ error: "Error adding question", e: error });
 	}
 };
-const getQuestions= async (req, res) => {
+const getQuestions = async (req, res) => {
 	try {
-		const data = await Token.find({
-		});
+		const data = await Questions.find({});
 
-		res.status(200).json({ data });
+		res.status(200).json(data);
 	} catch (error) {
 		console.error("Can't get questions", error);
 		res.status(500).json({ error: "Can't get questions", e: error });
