@@ -30,12 +30,27 @@ const addQuestion = async (req, res) => {
 };
 const getQuestions = async (req, res) => {
 	try {
-		const data = await Questions.find({});
+		const data = await Questions.aggregate([
+			{
+				$lookup: {
+					from: "votes",
+					as: "votes",
+					let: { question: "$_id" },
+					pipeline: [
+						{
+							$match: {
+								$expr: { $eq: ["$question", "$$question"] },
+								user: req.user ? req.user._id : "",
+							},
+						},
+					],
+				},
+			},
+		]);
 
-		res.status(200).json(data);
+		res.status(200).send(data);
 	} catch (error) {
-		console.error("Can't get questions", error);
-		res.status(500).json({ error: "Can't get questions", e: error });
+		res.status(500).send({ message: error.message });
 	}
 };
 
