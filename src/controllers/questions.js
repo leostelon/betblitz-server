@@ -1,6 +1,7 @@
 const { Questions } = require("../models/questions");
 const fs = require("fs");
 const { Vote } = require("../models/vote");
+const { makeRequestMumbai } = require("../utils/request.js")
 
 const addQuestion = async (req, res) => {
 	try {
@@ -13,9 +14,8 @@ const addQuestion = async (req, res) => {
 		if (!path) return res.status(400).json({ error: "required path" });
 		if (!expireAt) return res.status(400).json({ error: "required expireAt" });
 
-		const data = Questions.create({
+		const data = await Questions.create({
 			question,
-			qid,
 			yesAnswer,
 			noAnswer,
 			path,
@@ -25,8 +25,7 @@ const addQuestion = async (req, res) => {
 
 		return res.status(200).json(data);
 	} catch (error) {
-		console.error("Error adding question", error);
-		res.status(500).json({ error: "Error adding question", e: error });
+		res.status(500).send({ message: error.message });
 	}
 };
 const getQuestions = async (req, res) => {
@@ -47,19 +46,18 @@ const nodescript = async (req, res) => {
 			return res.status(500).send({ message: "Please send script!" });
 
 		const codePath = `questionApiScripts/code_${Date.now()}.js`;
-		var writeStream = fs.createWriteStream(`${codePath}`);
+		var writeStream = fs.createWriteStream(codePath);
 		writeStream.write(script);
 		writeStream.end();
 
 		res.send({ filename: codePath });
 	} catch (error) {
-		console.log(error.message);
+		res.status(500).send({ message: error.message });
 	}
 };
 
 const voteQuestion = async (req, res) => {
 	try {
-		console.log(req.body);
 		const question = await Questions.findById(req.body.question);
 		const vote = await new Vote({
 			question: question._id,
@@ -69,8 +67,24 @@ const voteQuestion = async (req, res) => {
 
 		res.status(201).send(vote);
 	} catch (error) {
-		res.status(500).json({ message: error.message });
+		res.status(500).send({ message: error.message });
 	}
 };
 
-module.exports = { addQuestion, getQuestions, voteQuestion, nodescript };
+const closeQuestion = async (req, res) => {
+	try {
+		if (!req.body.question) return res.status(400).send({ message: "please send question id" });
+
+		const question = await Questions.findById(req.body.question);
+		console.log(question)
+		const resp = await makeRequestMumbai(question.path).catch((e) => {
+			console.error(e);
+			process.exit(1);
+		});
+		res.send({ finalAnswer: resp })
+	} catch (error) {
+		res.status(500).send({ message: error.message });
+	}
+}
+
+module.exports = { addQuestion, getQuestions, voteQuestion, nodescript, closeQuestion };
