@@ -3,32 +3,21 @@ const { Cions } = require("../models/coin");
 
 const addCoinPlay = async (req, res) => {
 	try {
-		const { playerOne, playerOneSelection } = req.body;
-		if (!playerOne)
-			return res.status(400).json({ error: "required playerOne" });
-		if (playerOneSelection)
+		const { playerOneSelection, amount } = req.body;
+
+		if (!playerOneSelection)
 			return res.status(400).json({ error: "required playerOneSelection" });
+		if (!amount) return res.status(400).json({ error: "required amount" });
 		if (!(playerOneSelection === "HEADS" || playerOneSelection === "TAILS"))
 			return res
 				.status(400)
 				.json({ error: "playerOneSelection should be HEADS or TAILS" });
 
-		// checking user already playing coin game
-		const anyPlayingGames = await Cions.findOne({
-			user: req.user._id,
-			status: { $in: ["PLAYING", "WAITING"] },
-		});
-		if (anyPlayingGames) {
-			return res
-				.status(400)
-				.json({ error: "user alredy playing a game, can't create new one" });
-		}
-
-		// else create new game
 		const data = await Cions.create({
 			status: "WAITING",
-			playerOne,
+			playerOne: req.user._id,
 			playerOneSelection,
+			amount,
 		});
 
 		return res.status(200).json(data);
@@ -128,19 +117,9 @@ const joinCoinPlay = async (req, res) => {
 
 const getCoinPlay = async (req, res) => {
 	try {
-		const coinId = req.params.id;
-
-		if (!isValidObjectId(coinId))
-			return res.status(400).json({ error: "In valid coin play Id" });
-
-		const data = await Cions.findOne({
-			_id: coinId,
+		const data = await Cions.find({
 			$or: [{ playerOne: req.user._id }, { playerTwo: req.user._id }],
 		});
-
-		if (!data) {
-			return res.status(400).json({ error: "could not game" });
-		}
 
 		return res.status(200).json(data);
 	} catch (error) {
@@ -148,4 +127,4 @@ const getCoinPlay = async (req, res) => {
 	}
 };
 
-module.exports = { addCoinPlay, cancleCoinPlay, joinCoinPlay,getCoinPlay };
+module.exports = { addCoinPlay, cancleCoinPlay, joinCoinPlay, getCoinPlay };
