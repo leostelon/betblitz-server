@@ -91,11 +91,12 @@ const closeQuestion = async (req, res) => {
 		if (!req.body.question) return res.status(400).send({ message: "please send question id" });
 
 		const question = await Questions.findById(req.body.question);
-		console.log(question)
 		const resp = await makeRequestMumbai(question.path).catch((e) => {
 			console.error(e);
 			process.exit(1);
 		});
+		question.finalAnswer = req.body.finalAnswer;
+		await question.save()
 		res.send({ finalAnswer: resp })
 	} catch (error) {
 		res.status(500).send({ message: error.message });
