@@ -67,6 +67,7 @@ const joinCoinPlay = async (req, res) => {
 			{
 				_id: coinId,
 				status: "WAITING",
+				playerOne: { $ne: req.user._id },
 			},
 			{
 				status: "PLAYING",
@@ -82,12 +83,11 @@ const joinCoinPlay = async (req, res) => {
 
 		// ! call vrf get result
 
-		const output = 0; // 0 or 1
-		// on result
+		const output = Math.random() < 0.5 ? 0 : 1;
 
 		console.log("vrf get result", output);
 
-		if (!(output === O || output === 1)) {
+		if (!(output === 0 || output === 1)) {
 			await Cions.updateOne(
 				{
 					_id: coinId,
@@ -99,7 +99,7 @@ const joinCoinPlay = async (req, res) => {
 			return res.status(400).json({ error: "Game Error." });
 		}
 
-		const finalData = await Cions.updateOne(
+		const finalData = await Cions.findOneAndUpdate(
 			{
 				_id: coinId,
 			},
@@ -119,6 +119,8 @@ const getCoinPlay = async (req, res) => {
 	try {
 		const data = await Cions.find({
 			$or: [{ playerOne: req.user._id }, { playerTwo: req.user._id }],
+		}).sort({
+			createdAt: -1,
 		});
 
 		return res.status(200).json(data);
@@ -127,4 +129,26 @@ const getCoinPlay = async (req, res) => {
 	}
 };
 
-module.exports = { addCoinPlay, cancleCoinPlay, joinCoinPlay, getCoinPlay };
+const getAvailablePlays = async (req, res) => {
+	try {
+		const data = await Cions.find({
+			status: "WAITING",
+		})
+			.sort({
+				createdAt: -1,
+			})
+			.populate(["playerOne"]);
+
+		return res.status(200).json(data);
+	} catch (error) {
+		res.status(500).send({ message: error.message });
+	}
+};
+
+module.exports = {
+	addCoinPlay,
+	cancleCoinPlay,
+	joinCoinPlay,
+	getCoinPlay,
+	getAvailablePlays,
+};
