@@ -3,11 +3,13 @@ const { Cions } = require("../models/coin");
 
 const addCoinPlay = async (req, res) => {
 	try {
-		const { playerOneSelection, amount } = req.body;
+		const { playerOneSelection, amount, cid } = req.body;
 
 		if (!playerOneSelection)
 			return res.status(400).json({ error: "required playerOneSelection" });
 		if (!amount) return res.status(400).json({ error: "required amount" });
+		if (cid === undefined || cid === null)
+			return res.status(400).json({ error: "required cid" });
 		if (!(playerOneSelection === "HEADS" || playerOneSelection === "TAILS"))
 			return res
 				.status(400)
@@ -18,6 +20,7 @@ const addCoinPlay = async (req, res) => {
 			playerOne: req.user._id,
 			playerOneSelection,
 			amount,
+			cid,
 		});
 
 		return res.status(200).json(data);

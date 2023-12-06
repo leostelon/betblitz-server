@@ -29,6 +29,10 @@ const CoinSchema = new mongoose.Schema(
 			type: Number,
 			required: true,
 		},
+		cid: {
+			type: Number,
+			required: true,
+		},
 	},
 	{
 		timestamps: true,
